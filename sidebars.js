@@ -19,6 +19,8 @@ module.exports = {
     },
     "application-development-guide",
     "cluster-operations-guide",
+    "external-resources",
+    "references/glossary",
   ],
   sidebarExplained: [
     {
