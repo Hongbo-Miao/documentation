@@ -161,7 +161,7 @@ module.exports = {
             {
               type: "link",
               label: "Sagas in PHP",
-              href: "/docs/php/booking-saga-tutorial",
+              href: "/php/booking-saga-tutorial",
             },
             {
               type: "link",

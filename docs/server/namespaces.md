@@ -12,7 +12,7 @@ import Content from '../concepts/what-is-a-namespace.md'
 
 ## Querying Namespaces by CLI
 
-Some useful operations with [tctl](/docs/tctl):
+Some useful operations with [tctl](/tctl):
 
 - `tctl namespace list`: List all namespaces.
 - `tctl --namespace my-namespace-name namespace register`: Register a new namespace named "my-namespace-name"
@@ -73,7 +73,7 @@ import CustomWarning from "../components/CustomWarning.js"
 
 <CustomWarning>
 
-This feature is related to Temporal's experimental Multi-cluster Replication feature which is considered **experimental** and not subject to normal [versioning and support policy](/docs/server/versions-and-dependencies).
+This feature is related to Temporal's experimental Multi-cluster Replication feature which is considered **experimental** and not subject to normal [versioning and support policy](/server/versions-and-dependencies).
 
 </CustomWarning>
 
@@ -85,7 +85,7 @@ clusters, it is only considered active in a single cluster.
 ### Global Namespaces Architecture
 
 Temporal has introduced a new top level entity, Global Namespaces, which provides support for replication of Workflow
-execution across clusters (aka [Multi-Cluster Replication](/docs/server/multi-cluster)).
+execution across clusters (aka [Multi-Cluster Replication](/server/multi-cluster)).
 Client applications need to run workers polling on Activity/Workflow tasks on all clusters.
 Temporal will only dispatch tasks on the current active cluster; workers on the standby cluster will sit idle
 until the Global Namespace is failed over.
@@ -110,7 +110,7 @@ event to the cluster that is currently active.
 ### Conflict Resolution
 
 Unlike local namespaces which provide at-most-once semantics for Activity execution, Global Namespaces can only support at-least-once
-semantics. [Temporal Multi-cluster Replication](/docs/server/multi-cluster) relies on asynchronous replication of events across clusters, so in the event of a failover
+semantics. [Temporal Multi-cluster Replication](/server/multi-cluster) relies on asynchronous replication of events across clusters, so in the event of a failover
 it is possible that Activity gets dispatched again on the new active cluster due to a replication task lag. This also
 means that whenever Workflow execution is updated after a failover by the new cluster, any previous replication tasks
 for that execution cannot be applied. This results in loss of some progress made by the Workflow execution in the
