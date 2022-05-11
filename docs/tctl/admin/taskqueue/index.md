@@ -8,3 +8,10 @@ tags:
 ---
 
 The `tctl admin taskqueue` command allows admin-level operations to be executed on the Task Queue.
+
+#### Usage
+`tctl admin taskqueue command [command modifiers] [arguments...]`
+
+### Commands
+- tctl admin taskqueue describe
+- tctl admin taskqueue list_tasks
