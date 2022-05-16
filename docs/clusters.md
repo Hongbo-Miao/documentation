@@ -21,11 +21,11 @@ Information may change at any time.
 
 :::
 
-A Temporal Cluster is the group of services, known as the [Temporal Server](#temporal-server), combined with persistence stores, that together, act as a component of the Temporal Platform.
+A Temporal Cluster is the group of services, known as the [Temporal Server](/concepts/what-is-the-temporal-server), combined with persistence stores, that together act as a component of the Temporal Platform.
 
 ![A Temporal Cluster (Server + persistence)](/diagrams/temporal-cluster.svg)
 
-- [How to quickly install a Temporal Cluster for testing and development](/docs/application-development-guide/#run-a-dev-cluster)
+- [How to quickly install a Temporal Cluster for testing and development](/clusters/quick-install)
 
 #### Persistence
 
@@ -43,9 +43,9 @@ The database stores the following types of data:
   - History table: An append only log of Workflow Execution History Events.
 - Namespace metadata: Metadata of each Namespace in the Cluster.
 - Visibility data: Enables operations like "show all running Workflow Executions".
-  For production environments, we recommend using ElasticSearch.
+  For production environments, we recommend using Elasticsearch.
 
-An Elasticsearch database can be added to enable [Advanced Visibility](/docs/visibility/#advanced-visibility).
+An Elasticsearch database can be added to enable [Advanced Visibility](/concepts/what-is-advanced-visibility).
 
 ## Temporal Server
 
@@ -56,19 +56,19 @@ The Temporal Server consists of four independently scalable services:
 - Matching subsystem: hosts Task Queues for dispatching
 - Worker service: for internal background workflows
 
-For example, a real life production deployment can have 5 Frontend, 15 History, 17 Matching, and 3 Worker services per cluster.
+For example, a real-life production deployment can have 5 Frontend, 15 History, 17 Matching, and 3 Worker services per cluster.
 
 The Temporal Server services can run independently or be grouped together into shared processes on one or more physical or virtual machines.
-For live (production) environments we recommend that each service runs independently, as each one has different scaling requirements, and troubleshooting becomes easier.
+For live (production) environments, we recommend that each service runs independently, because each one has different scaling requirements and troubleshooting becomes easier.
 The History, Matching, and Worker services can scale horizontally within a Cluster.
-The Frontend Service scales differently than the others, because it has no sharding/partitioning, it is just stateless.
+The Frontend Service scales differently than the others because it has no sharding or partitioning; it is just stateless.
 
 Each service is aware of the others, including scaled instances, through a membership protocol via [Ringpop](https://github.com/temporalio/ringpop-go).
 
 #### Frontend Service
 
 The Frontend Service is a stateless gateway service that exposes a strongly typed [Proto API](https://github.com/temporalio/api/blob/master/temporal/api/workflowservice/v1/service.proto).
-The Frontend Service is responsible for rate limiting, authorizing, validating, and routing all in-bound calls.
+The Frontend Service is responsible for rate limiting, authorizing, validating, and routing all inbound calls.
 
 ![Frontend Service](/diagrams/temporal-frontend-service.svg)
 
@@ -78,10 +78,10 @@ Types of inbound calls include the following:
 - External events
 - Worker polls
 - Visibility requests
-- Admin operations via the CLI
-- [Multi-cluster Replication](/docs/server/multi-cluster) related calls from a remote Cluster
+- Admin operations via [tctl](/tctl) (the Temporal CLI)
+- [Multi-cluster Replication](/server/multi-cluster) related calls from a remote Cluster
 
-Every inbound request related to a Workflow Execution must have a Workflow Id, which becomes hashed for routing purposes.
+Every inbound request related to a Workflow Execution must have a Workflow Id, which is hashed for routing purposes.
 The Frontend Service has access to the hash rings that maintain service membership information, including how many nodes (instances of each service) are in the Cluster.
 
 Inbound call rate limiting is applied per host and per namespace.
@@ -89,7 +89,7 @@ Inbound call rate limiting is applied per host and per namespace.
 The Frontend service talks to the Matching service, History service, Worker service, the database, and Elasticsearch (if in use).
 
 - It uses the grpcPort 7233 to host the service handler.
-- It uses port 6933 for membership related communication.
+- It uses port 6933 for membership-related communication.
 
 #### History service
 
@@ -100,19 +100,19 @@ The History Service tracks the state of Workflow Executions.
 The History Service scales horizontally via individual shards, configured during the Cluster's creation.
 The number of shards remains static for the life of the Cluster (so you should plan to scale and over-provision).
 
-Each shard maintains data (routing Ids, mutable state) and queues.
+Each shard maintains data (routing identifiers, mutable state) and queues.
 A History shard maintains four types of queues:
 
 - Transfer queue: transfers internal tasks to the Matching Service.
   Whenever a new Workflow Task needs to be scheduled, the History Service transactionally dispatches it to the Matching Service.
 - Timer queues: durably persists Timers.
 - Replicator queue: asynchronously replicates Workflow Executions from active Clusters to other passive Clusters (experimental Multi-Cluster feature).
-- Visibility queue: pushes data to the visibility index (ElasticSearch).
+- Visibility queue: pushes data to the visibility index (Elasticsearch).
 
 The History service talks to the Matching Service and the Database.
 
 - It uses grpcPort 7234 to host the service handler.
-- It uses port 6934 for membership related communication.
+- It uses port 6934 for membership-related communication.
 
 #### Matching service
 
@@ -120,7 +120,7 @@ The Matching Service is responsible for hosting Task Queues for Task dispatching
 
 ![Matching Service](/diagrams/temporal-matching-service.svg)
 
-It is responsible for matching Workers to Tasks and routing new tasks to the appropriate queue.
+It is responsible for matching Workers to Tasks and routing new Tasks to the appropriate queue.
 This service can scale internally by having multiple instances.
 
 It talks to the Frontend service, History service, and the database.
@@ -130,29 +130,29 @@ It talks to the Frontend service, History service, and the database.
 
 #### Worker service
 
-The Worker Service runs background processing for the replication queue, system Workflows, and in versions older than 1.5.0, the Kafka visibility processor.
+The Worker Service runs background processing for the replication queue, system Workflows, and (in versions older than 1.5.0) the Kafka visibility processor.
 
 ![Worker Service](/diagrams/temporal-worker-service.svg)
 
 It talks to the Frontend service.
 
-- It uses port 6939 for membership related communication.
+- It uses port 6939 for membership-related communication.
 
 ## Archival
 
-Archival is a feature that automatically backs up [Event Histories](/docs/workflows/#event-history) and Visibility records from Temporal Cluster persistence to a custom blob store.
+Archival is a feature that automatically backs up [Event Histories](/concepts/what-is-an-event-history) and Visibility records from Temporal Cluster persistence to a custom blob store.
 
-- [How to set up Archival](/docs/cluster-operations-guide/#set-up)
-- [How to create a custom Archiver](/docs/clusters/how-to-create-a-custom-archiver)
+- [How to set up Archival](/clusters/how-to-set-up-archival)
+- [How to create a custom Archiver](/clusters/how-to-create-a-custom-archiver)
 
-Workflow Execution Event Histories are backed up after the [Retention Period](/docs/namespaces/#/#retention-period) is reached.
+Workflow Execution Event Histories are backed up after the [Retention Period](/concepts/what-is-a-namespace/#retention-period) is reached.
 Visibility records are backed up immediately after a Workflow Execution reaches a Closed status.
 
 Archival enables Workflow Execution data to persist as long as needed, while not overwhelming the Cluster's persistence store.
 
-This feature is helpful for compliance, and debugging.
+This feature is helpful for compliance and debugging.
 
-Temporal's Archival feature is considered **experimental** and not subject to normal [versioning and support policy](/docs/server/versions-and-dependencies).
+Temporal's Archival feature is considered **experimental** and not subject to normal [versioning and support policy](/server/versions-and-dependencies).
 
 Archival is not supported when running Temporal via docker-compose and is disabled by default when installing the system manually and when deploying via [helm charts](https://github.com/temporalio/helm-charts/blob/master/templates/server-configmap.yaml) (but can be enabled in the [config](https://github.com/temporalio/temporal/blob/master/config/development.yaml)).
 
@@ -534,3 +534,4 @@ T = 2: task A is loaded.
 
 At this time, due to the rebuild of a Workflow Execution's mutable state (conflict resolution), Task A is no longer relevant (Task A's corresponding Event belongs to non-current branch).
 Task processing logic will verify both the Event Id and version of the Task against a corresponding Workflow Execution's mutable state, then discard task A.
+
